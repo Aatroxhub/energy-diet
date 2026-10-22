@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>能量库存 · 高精力饮食结构分析</title>
+<style>
+:root{--bg:#0f1115;--pnl:#171a21;--pnl2:#1d212b;--line:#272c37;--tx:#e6e9ef;--dim:#8b93a3;--ok:#3ecf8e;--warn:#f5a524;--bad:#f2524d;--acc:#5b8cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 system-ui,"Segoe UI","Microsoft YaHei",sans-serif}
+header{display:flex;gap:14px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:9;flex-wrap:wrap}
+h1{font-size:15px;margin:0;font-weight:600}
+h1 b{color:var(--acc)}
+h1 span{color:var(--dim);font-weight:400;font-size:12px;margin-left:8px}
+.sp{flex:1}
+nav{display:flex;gap:4px;padding:7px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--bg);position:sticky;top:53px;z-index:8}
+nav button{background:none;border:1px solid transparent;color:var(--dim);padding:6px 13px;border-radius:8px;cursor:pointer;font-size:13px}
+nav button.on{background:var(--pnl);border-color:var(--line);color:var(--tx)}
+nav button:disabled{opacity:.35;cursor:not-allowed}
+main{padding:16px 18px 60px;max-width:1120px;margin:0 auto}
+section{display:none}section.on{display:block}
+.card{background:var(--pnl);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:13px}
+.card h2{font-size:13px;margin:0 0 10px;font-weight:600;color:var(--dim);letter-spacing:.4px;text-transform:none}
+button,.btn{background:var(--pnl2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:13px;font-family:inherit}
+button:hover{border-color:#3a4252}
+button.acc{background:var(--acc);border-color:var(--acc);color:#fff}
+button.gh{background:none}
+button.sm{padding:3px 8px;font-size:12px}
+button.dg{color:var(--bad);border-color:#3a2626}
+input,select,textarea{background:#0c0e13;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:13px inherit;font-family:inherit;outline:none}
+input:focus,select:focus{border-color:var(--acc)}
+input[type=number]{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--dim);font-weight:500;font-size:12px}
+tr:last-child td{border-bottom:0}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.bar{height:6px;border-radius:3px;background:#232833;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;border-radius:3px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.bg-ok{background:var(--ok)}.bg-warn{background:var(--warn)}.bg-bad{background:var(--bad)}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:5px;background:#242a36;color:var(--dim)}
+.banner{border:1px solid #3b3320;background:#241f12;color:#f0c674;padding:11px 14px;border-radius:10px;margin-bottom:13px;font-size:13px}
+.empty{color:var(--dim);text-align:center;padding:34px 10px;font-size:13px}
+.res{border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;display:flex;gap:10px;align-items:center;background:#12151b}
+.res:hover{border-color:#3a4252}
+.res .nm{flex:1;min-width:0}
+.res .nm b{font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .nm small{color:var(--dim);font-size:11px}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.day{background:#12151b;border:1px solid var(--line);border-radius:10px;padding:11px}
+.day h3{margin:0 0 8px;font-size:12px;color:var(--dim);font-weight:600}
+.meal{margin-bottom:7px;font-size:13px}
+.meal .lbl{font-size:11px;color:var(--dim)}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-start;justify-content:center;z-index:50;padding:20px;overflow:auto}
+#modal.on{display:flex}
+.sheet{background:var(--pnl);border:1px solid var(--line);border-radius:14px;padding:18px;width:100%;max-width:760px}
+.sheet h3{margin:0 0 12px;font-size:15px}
+.nf{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:7px}
+.nf label{font-size:11px;color:var(--dim);display:block;margin-bottom:2px}
+.hint{font-size:12px;color:var(--dim);line-height:1.6}
+details summary{cursor:pointer;color:var(--dim);font-size:12px;padding:4px 0}
+.fix td{padding:5px 8px}
+.fix .cheap{color:var(--ok);font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1><b>能量库存</b> <span>库存 → 30 项元素覆盖 → 2000 kcal 内最便宜补法</span></h1>
+  <div class="sp"></div>
+  <button id="btnExport" class="gh sm">导出 JSON</button>
+  <button id="btnImport" class="gh sm">导入</button>
+  <input type="file" id="fileIn" accept=".json" hidden>
+</header>
+<nav>
+  <button data-tab="inv" class="on">① 库存</button>
+  <button data-tab="ana">② 今日分析</button>
+  <button data-tab="plan">③ 三天食谱</button>
+  <button data-tab="score">④ 精力评分</button>
+  <button data-tab="set">⑤ 设置</button>
+</nav>
+<main>
+
+<section id="tab-inv" class="on">
+  <div id="invBanner"></div>
+  <div class="card">
+    <h2>在线查询食物（免费，无需预置数据库）</h2>
+    <div class="row">
+      <input id="q" placeholder="中文或英文，如 鸡胸肉 / chicken breast" style="flex:1;min-width:200px">
+      <select id="src">
+        <option value="off">Open Food Facts（免 key）</option>
+        <option value="usda">USDA FoodData（需 key，生鲜更全）</option>
+      </select>
+      <button id="btnSearch" class="acc">查询</button>
+      <input id="bar" placeholder="或输入条码" style="width:130px">
+      <button id="btnBar" class="gh">查条码</button>
+    </div>
+    <div class="hint" style="margin-top:8px">生鲜（米/肉/蛋/菜）建议用英文查，OFF 中文覆盖率低；包装食品直接扫条码最准。查到的数据会缓存到本地，同一食物只请求一次。</div>
+    <div id="results" style="margin-top:11px"></div>
+  </div>
+  <div class="card">
+    <h2>我的库存</h2>
+    <div class="row" style="margin-bottom:10px">
+      <button id="btnManual" class="acc">+ 手动录入食物</button>
+      <button id="btnSupp">+ 录入补剂</button>
+      <div class="sp"></div>
+      <span id="invSum" class="tag"></span>
+    </div>
+    <div id="invTable"></div>
+  </div>
+</section>
+
+<section id="tab-ana">
+  <div id="anaBody"><div class="empty">请先在「① 库存」里录入你手头的东西。</div></div>
+</section>
+
+<section id="tab-plan">
+  <div id="planBody"><div class="empty">请先在「① 库存」里录入你手头的东西。</div></div>
+</section>
+
+<section id="tab-score">
+  <div id="scoreBody"></div>
+</section>
+
+<section id="tab-set">
+  <div class="card">
+    <h2>每日目标（可改）</h2>
+    <div id="tgForm" class="nf"></div>
+    <div class="row" style="margin-top:10px"><button id="btnSaveT" class="acc">保存目标</button><button id="btnResetT" class="gh">恢复默认</button></div>
+  </div>
+  <div class="card">
+    <h2>安全上限 UL（可改，超过会标红）</h2>
+    <div id="ulForm" class="nf"></div>
+    <div class="row" style="margin-top:10px"><button id="btnSaveU" class="acc">保存上限</button></div>
+  </div>
+  <div class="card">
+    <h2>数据源配置</h2>
+    <div class="grid">
+      <div><label class="hint">USDA API Key（免费注册，可用 DEMO_KEY）</label><input id="cfgUsda"></div>
+      <div><label class="hint">AI 兜底接口（OpenAI 兼容，可空）</label><input id="cfgAiUrl" placeholder="https://api.deepseek.com/v1"></div>
+      <div><label class="hint">AI Key</label><input id="cfgAiKey" type="password"></div>
+      <div><label class="hint">AI 模型名</label><input id="cfgAiModel" placeholder="deepseek-chat"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button id="btnSaveC" class="acc">保存配置</button><button id="btnClearCache" class="gh">清空查询缓存</button></div>
+    <div class="hint" style="margin-top:9px">AI 兜底只在大模型「估算」时使用，数值置信度低，会在结果里标注。不建议作为主要来源。</div>
+  </div>
+  <div class="card">
+    <h2>数据管理</h2>
+    <div class="row">
+      <button id="btnExport2">导出全部数据（JSON）</button>
+      <button id="btnImport2">导入 JSON</button>
+      <button id="btnWipe" class="dg">清空所有数据</button>
+    </div>
+    <div class="hint" style="margin-top:9px">导出的 JSON 含库存、目标、上限、价格、查询缓存与配置，可直接提交进 GitHub 仓库做个人饮食档案（注意：AI Key 也会被导出，提交前请清空）。</div>
+  </div>
+</section>
+</main>
+
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+"use strict";
+/* ---------- 字段定义：30 项 ---------- */
+var F=[
+ ["kcal","热量","kcal"],["prot","蛋白质","g"],["carb","碳水","g"],["fat","脂肪","g"],["fib","纤维","g"],
+ ["ca","钙","mg"],["fe","铁","mg"],["zn","锌","mg"],["mg","镁","mg"],["k","钾","mg"],["na","钠","mg"],
+ ["se","硒","μg"],["iod","碘","μg"],["va","维A","μg"],["vd","维D","μg"],["ve","维E","mg"],["vk","维K","μg"],
+ ["b1","B1","mg"],["b2","B2","mg"],["b3","B3","mg"],["b6","B6","mg"],["b9","叶酸","μg"],["b12","B12","μg"],
+ ["vc","维C","mg"],["chol","胆碱","mg"],["o3","Omega3","mg"],["ala","ALA","g"],["cu","铜","mg"],["mn","锰","mg"],["phos","磷","mg"]
+];
+var FKEYS=F.map(function(x){return x[0]});
+var DEF_T={kcal:2000,prot:130,carb:130,fat:55,fib:28,ca:800,fe:12,zn:12.5,mg:330,k:2000,na:1500,se:60,iod:120,va:800,vd:15,ve:14,vk:80,b1:1.4,b2:1.4,b3:15,b6:1.4,b9:400,b12:2.4,vc:100,chol:500,o3:500,ala:1.3,cu:0.8,mn:2.3,phos:720};
+var DEF_UL={kcal:2100,na:2000,va:3000,vd:50,ve:700,b6:60,vc:2000,fe:42,zn:40,se:400,iod:600,ca:2000,mg:350,cu:8,mn:11,phos:3500};
+var CAPN={kcal:1,na:1};
+
+/* ---------- 最便宜补给方案表：[名称, 份量文字, 每份提供量, 每份价格元] ---------- */
+var FIX={
+ kcal:[["米饭","200g",232,1],["燕麦","60g",226,1.2],["红薯","300g",258,2]],
+ prot:[["鸡胸肉","100g",19.4,4],["鸡蛋","2个",13.3,2],["乳清蛋白粉","30g",24,5]],
+ fib:[["燕麦","50g",5.3,1],["奇亚籽","20g",6.9,2],["车前子壳粉","5g",4,0.5]],
+ ca:[["牛奶","300ml",312,3.5],["北豆腐","200g",276,2],["碳酸钙片","1片",600,0.3]],
+ fe:[["猪肝","50g",11.3,1.5],["瘦牛肉","100g",2.8,8],["鸭血","100g",30,3],["铁剂(甘氨酸亚铁)","1片",20,0.4]],
+ zn:[["南瓜子","30g",2.3,1.2],["生蚝","100g",9,15],["锌片","1片",10,0.3]],
+ mg:[["南瓜子","30g",178,1.5],["菠菜","200g",116,2],["甘氨酸镁","1片",100,0.2]],
+ k:[["香蕉","1根",256,1],["土豆","300g",1026,2],["菠菜","200g",622,2.5]],
+ se:[["巴西坚果","2颗",100,1],["鸡蛋","1个",7,1],["海鱼","100g",40,15]],
+ iod:[["碘盐","5g",125,0.1],["紫菜(干)","3g",130,0.5],["碘片","1片",150,0.2]],
+ va:[["猪肝","30g",1490,1],["胡萝卜","200g",1376,1.5],["维A胶囊","1粒",1500,0.2]],
+ vd:[["三文鱼","100g",11,15],["蛋黄","2个",4,2],["维D3 1000IU","1片",25,0.15]],
+ ve:[["杏仁","30g",7.7,2.5],["葵花籽油","10g",4,0.5],["维E胶囊","1粒",10,0.2]],
+ vk:[["菠菜","200g",966,2.5],["西兰花","200g",202,2.4],["维K2","1片",90,0.4]],
+ b9:[["菠菜","200g",388,2.5],["鹰嘴豆","100g",172,2],["叶酸片","1片",400,0.1]],
+ b12:[["蛤蜊","100g",98,12],["牛肉","100g",1.5,8],["B12片","1片",1000,0.1]],
+ vc:[["猕猴桃","1个",62,1.5],["甜椒","100g",128,2],["维C片","1片",100,0.1]],
+ chol:[["鸡蛋","2个",500,2],["鸡肝","100g",330,3],["大豆卵磷脂","5g",250,1]],
+ o3:[["三文鱼","100g",1500,15],["沙丁鱼罐头","100g",1400,6],["鱼油","1粒",600,0.5]],
+ ala:[["亚麻籽","15g",3.4,1],["核桃","20g",1.8,1.5]],
+ cu:[["猪肝","50g",0.3,1.5],["可可粉","10g",0.4,1]],
+ mn:[["燕麦","80g",3.9,1.6],["南瓜子","30g",1.35,1.5]],
+ phos:[["瘦肉","100g",190,7],["牛奶","300ml",219,3.5]],
+ b1:[["猪肉","100g",0.47,6],["葵花籽","30g",0.5,1.5]],
+ b2:[["牛奶","300ml",0.42,3.5],["鸡蛋","2个",0.54,2]],
+ b3:[["鸡胸肉","100g",10.8,4],["金枪鱼","100g",10,8]],
+ b6:[["鸡胸肉","100g",0.6,4],["鹰嘴豆","100g",0.5,2]],
+ carb:[["米饭","200g",51.8,1],["燕麦","60g",40,1.2]]
+};
+
+/* ---------- 状态 ---------- */
+var S={v:1,items:[],targets:{},ul:{},cfg:{usda:"DEMO_KEY",aiUrl:"",aiKey:"",aiModel:"deepseek-chat"},cache:{}};
+function loadS(){try{var r=JSON.parse(localStorage.getItem("energy-diet-v1"));if(r&&r.items){S=r;}}catch(e){}
+  if(!S.targets||!Object.keys(S.targets).length)S.targets=Object.assign({},DEF_T);
+  if(!S.ul||!Object.keys(S.ul).length)S.ul=Object.assign({},DEF_UL);
+  if(!S.cfg)S.cfg={usda:"DEMO_KEY",aiUrl:"",aiKey:"",aiModel:"deepseek-chat"};
+  if(!S.cache)S.cache={};
+  S.items.forEach(function(it){it.per=it.per||{};});
+}
+function saveS(){try{localStorage.setItem("energy-diet-v1",JSON.stringify(S))}catch(e){alert("本地存储失败："+e.message)}}
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function r1(x){return Math.round((+x||0)*10)/10}
+function r2(x){return Math.round((+x||0)*100)/100}
+function fmt(x,d){x=+x||0;d=d==null?1:d;return (Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toLocaleString("zh-CN")}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function zero(){var o={};FKEYS.forEach(function(k){o[k]=0});return o}
+
+/* ---------- 数据源 ---------- */
+function g2mg(x){return (+x||0)*1000}
+function g2ug(x){return (+x||0)*1e6}
+function offMap(p){
+  var n=p.nutriments||{},o=zero();
+  o.kcal=n["energy-kcal_100g"]!=null?+n["energy-kcal_100g"]:(n["energy_100g"]?+n["energy_100g"]*0.239:0);
+  o.prot=+n.proteins_100g||0;o.carb=+n.carbohydrates_100g||0;o.fat=+n.fat_100g||0;o.fib=+n.fiber_100g||0;
+  o.ca=g2mg(n.calcium_100g);o.fe=g2mg(n.iron_100g);o.zn=g2mg(n.zinc_100g);o.mg=g2mg(n.magnesium_100g);
+  o.k=g2mg(n.potassium_100g);o.na=g2mg(n.sodium_100g);o.se=g2ug(n.selenium_100g);o.iod=g2ug(n.iodine_100g);
+  o.va=g2ug(n["vitamin-a_100g"]);o.vd=g2ug(n["vitamin-d_100g"]);o.ve=g2mg(n["vitamin-e_100g"]);o.vk=g2ug(n["vitamin-k_100g"]);
+  o.b1=g2mg(n["vitamin-b1_100g"]);o.b2=g2mg(n["vitamin-b2_100g"]);o.b3=g2mg(n["vitamin-pp_100g"]||n["vitamin-b3_100g"]);
+  o.b6=g2mg(n["vitamin-b6_100g"]);o.b9=g2ug(n.folates_100g);o.b12=g2ug(n["vitamin-b12_100g"]);o.vc=g2mg(n["vitamin-c_100g"]);
+  o.chol=g2mg(n.choline_100g);o.o3=g2mg(n["omega-3-fat_100g"]);o.ala=g2mg(n["alpha-linolenic-acid_100g"])/1000;
+  o.cu=g2mg(n.copper_100g);o.mn=g2mg(n.manganese_100g);o.phos=g2mg(n.phosphorus_100g);
+  FKEYS.forEach(function(k){o[k]=r2(o[k])});
+  return o;
+}
+var UMAP={208:"kcal",203:"prot",205:"carb",204:"fat",291:"fib",301:"ca",303:"fe",309:"zn",304:"mg",306:"k",307:"na",
+317:"se",314:"iod",320:"va",328:"vd",323:"ve",430:"vk",404:"b1",405:"b2",406:"b3",415:"b6",417:"b9",418:"b12",401:"vc",
+421:"chol",619:"ala",629:"o3",621:"o3",312:"cu",315:"mn",305:"phos"};
+function usdaMap(f){
+  var o=zero();
+  (f.foodNutrients||[]).forEach(function(x){
+    var no=x.nutrientNumber||x.number,v=(x.value!=null?x.value:x.amount);
+    if(v==null)v=0;var m=UMAP[no];if(!m)return;v=+v||0;
+    if(m==="o3"){o.o3+=v*1000;return}
+    if(m==="ala"){o.ala+=v;return}
+    o[m]=v;
+  });
+  FKEYS.forEach(function(k){o[k]=r2(o[k])});
+  return o;
+}
+function fetchJSON(u,opt){
+  opt=opt||{};
+  return new Promise(function(res,rej){
+    var ctl=new AbortController(),tm=setTimeout(function(){ctl.abort()},15000);
+    fetch(u,{signal:ctl.signal,headers:opt.headers||{}}).then(function(r){
+      clearTimeout(tm);if(!r.ok)throw new Error("HTTP "+r.status);return r.json();
+    }).then(res).catch(function(e){clearTimeout(tm);rej(e)});
+  });
+}
+async function searchOFF(q){
+  var u="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(q)+"&search_simple=1&action=process&json=1&page_size=12&fields=code,product_name,brands,nutriments";
+  var j=await fetchJSON(u);
+  return (j.products||[]).filter(function(p){return p.product_name}).map(function(p){
+    return {name:p.product_name,brand:p.brands||"",code:p.code||"",per:offMap(p),src:"OFF"};
+  });
+}
+async function searchUSDA(q){
+  var key=S.cfg.usda||"DEMO_KEY";
+  var u="https://api.nal.usda.gov/fdc/v1/foods/search?query="+encodeURIComponent(q)+"&pageSize=12&api_key="+encodeURIComponent(key);
+  var j=await fetchJSON(u);
+  return (j.foods||[]).map(function(f){
+    return {name:f.description||"未命名",brand:f.brandOwner||"",code:f.fdcId||"",per:usdaMap(f),src:"USDA"};
+  });
+}
+async function searchAI(q){
+  if(!S.cfg.aiUrl||!S.cfg.aiKey)throw new Error("未配置 AI 接口");
+  var sys="你是食物成分数据库。只输出 JSON 数组，不要解释。每项含 name 与 per100g 对象，字段："
+    +FKEYS.join(",")+"。单位：kcal/g/g/g/g/mg/mg/mg/mg/mg/mg/μg/μg/μgRAE/μg/mg/μg/mg/mg/mg/mg/μg/μg/mg/mg/mg/g/mg/mg/mg。未知填 0。";
+  var body={model:S.cfg.aiModel||"deepseek-chat",temperature:0,messages:[{role:"system",content:sys},{role:"user",content:"给出 3 条："+q}],response_format:{type:"json_object"}};
+  var r=await fetch(S.cfg.aiUrl.replace(/\/$/,"")+"/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.cfg.aiKey},body:JSON.stringify(body)});
+  var j=await r.json();var txt=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||"";
+  var arr=[];try{var p=JSON.parse(txt);arr=Array.isArray(p)?p:(p.foods||p.items||[])}catch(e){throw new Error("AI 返回无法解析")}
+  return arr.map(function(x){var o=zero();FKEYS.forEach(function(k){o[k]=+((x.per100g||x)[k])||0});return{name:x.name||q,brand:"",code:"",per:o,src:"AI-估算",low:1}});
+}
+async function doSearch(){
+  var q=$("#q").value.trim(),src=$("#src").value;
+  if(!q)return;
+  var box=$("#results");box.innerHTML='<div class="empty">查询中…</div>';
+  var ck=src+"::"+q.toLowerCase();
+  var data=null;
+  try{
+    if(S.cache[ck])data=S.cache[ck];
+    else if(src==="usda")data=await searchUSDA(q);
+    else data=await searchOFF(q);
+    if(!data||!data.length)throw new Error("无结果");
+    S.cache[ck]=data.slice(0,12);saveS();
+  }catch(e){
+    if(S.cfg.aiUrl&&S.cfg.aiKey){
+      box.innerHTML='<div class="empty">'+esc(src.toUpperCase())+' 查询失败（'+esc(e.message)+'），尝试 AI 兜底…</div>';
+      try{data=await searchAI(q)}catch(e2){box.innerHTML='<div class="empty">查询失败：'+esc(e.message)+'。可切换数据源或手动录入。</div>';return}
+    }else{
+      box.innerHTML='<div class="empty">查询失败：'+esc(e.message)+'。<br>生鲜请改用英文（chicken breast / white rice），或直接手动录入。</div>';return;
+    }
+  }
+  window.__res=data;
+  box.innerHTML=data.map(function(d,i){
+    return '<div class="res"><div class="nm"><b>'+esc(d.name)+'</b><small>'+esc(d.brand||d.src)+' · '+fmt(d.per.kcal,0)+' kcal · 蛋白 '+fmt(d.per.prot)+'g · 钙 '+fmt(d.per.ca,0)+'mg · 铁 '+fmt(d.per.fe)+'mg</small></div>'
+      +'<button class="sm" onclick="pickRes('+i+')">加入库存</button></div>';
+  }).join("")||'<div class="empty">无结果</div>';
+}
+async function doBar(){
+  var c=$("#bar").value.trim();if(!c)return;
+  var box=$("#results");box.innerHTML='<div class="empty">查询中…</div>';
+  try{
+    var j=await fetchJSON("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(c)+".json");
+    if(!j.product)throw new Error("未找到该条码");
+    var d={name:j.product.product_name||c,brand:j.product.brands||"",code:c,per:offMap(j.product),src:"OFF"};
+    window.__res=[d];box.innerHTML='<div class="res"><div class="nm"><b>'+esc(d.name)+'</b><small>'+esc(d.brand)+' · '+fmt(d.per.kcal,0)+' kcal</small></div><button class="sm" onclick="pickRes(0)">加入库存</button></div>';
+  }catch(e){box.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+
+/* ---------- 库存 ---------- */
+function pickRes(i){
+  var d=(window.__res||[])[i];if(!d)return;
+  openItem({name:d.name,brand:d.brand,unit:"g",qty:100,price:"",per:d.per,src:d.src});
+}
+function openItem(p){
+  p=p||{};
+  var eid=p.id||p.edit||null;
+  window.__curSrc=p.src||"手动";
+  var html='<h3>'+(eid?"编辑 ":"添加 ")+'条目</h3>'
+   +'<div class="grid">'
+   +'<div><label class="hint">名称</label><input id="nName" value="'+esc(p.name||"")+'"></div>'
+   +'<div><label class="hint">品牌/备注</label><input id="nBrand" value="'+esc(p.brand||"")+'"></div>'
+   +'<div><label class="hint">营养基准</label><select id="nUnit">'
+     +["g","ml","个","片","粒","勺","份"].map(function(u){return '<option'+(p.unit===u?" selected":"")+'>'+u+'</option>'}).join("")
+   +'</select></div>'
+   +'</div><div class="hint" style="margin:9px 0 6px" id="perLbl">营养含量（每 100g / 每 1 单位）</div><div class="nf">';
+  F.forEach(function(f){
+    html+='<div><label>'+f[1]+' <span class="tag">'+f[2]+'</span></label><input id="nf_'+f[0]+'" type="number" step="any" value="'+((p.per&&p.per[f[0]])||"")+'"></div>';
+  });
+  html+='</div><div class="row" style="margin-top:14px"><button class="acc" onclick="saveItem('+(eid?"'"+eid+"'":"null")+')">保存</button><button class="gh" onclick="closeModal()">取消</button></div>';
+  $("#sheet").innerHTML=html;$("#modal").classList.add("on");
+  $("#nUnit").addEventListener("change",function(){
+    $("#perLbl").textContent=this.value==="g"||this.value==="ml"?"营养含量（每 100g / 100ml）":"营养含量（每 1 "+this.value+"）";
+  });
+  $("#nUnit").dispatchEvent(new Event("change"));
+}
+function saveItem(editId){
+  var name=$("#nName").value.trim();
+  if(!name){alert("请填写名称");return}
+  var unit=$("#nUnit").value;
+  var base=(unit==="g"||unit==="ml")?"g":"unit";
+  var per=zero();
+  FKEYS.forEach(function(k){var el=$("#nf_"+k);per[k]=el?(+el.value||0):0});
+  var it={id:editId||uid(),name:name,brand:$("#nBrand").value.trim(),unit:unit,base:base,qty:1,price:0,per:per,src:window.__curSrc||"手动"};
+  if(editId){var i=S.items.findIndex(function(x){return x.id===editId});if(i>=0)it.src=S.items[i].src||"手动",S.items[i]=it}
+  else S.items.push(it);
+  saveS();closeModal();renderAll();
+}
+function delItem(id){if(!confirm("删除该条目？"))return;S.items=S.items.filter(function(x){return x.id!==id});saveS();renderAll()}
+function renderInv(){
+  var tb=$("#invTable");
+  if(!S.items.length){tb.innerHTML='<div class="empty">还没有库存。先在上面查一个食物，或手动录入。</div>';$("#invSum").textContent="";return}
+  var html='<table><thead><tr><th>名称</th><th class="num">热量</th><th class="num">蛋白</th><th class="num">钙</th><th class="num">铁</th><th class="num">维D</th><th>来源</th><th></th></tr></thead><tbody>';
+  S.items.forEach(function(it){
+    html+='<tr><td>'+esc(it.name)+(it.brand?' <span class="tag">'+esc(it.brand)+'</span>':"")+'</td>'
+      +'<td class="num">'+fmt(it.per.kcal,0)+'</td>'
+      +'<td class="num">'+fmt(it.per.prot)+'</td>'
+      +'<td class="num">'+fmt(it.per.ca,0)+'</td>'
+      +'<td class="num">'+fmt(it.per.fe,1)+'</td>'
+      +'<td class="num">'+fmt(it.per.vd,1)+'</td>'
+      +'<td><span class="tag">'+esc(it.src||"")+'</span></td>'
+      +'<td class="num"><button class="sm gh" onclick="openItem(S.items.find(function(x){return x.id===\''+it.id+'\'}))">改</button>'
+      +'<button class="sm dg" onclick="delItem(\''+it.id+'\')">删</button></td></tr>';
+  });
+  html+='</tbody></table>';
+  tb.innerHTML=html;
+  var nf=S.items.filter(function(x){return x.base==="g"}).length;
+  $("#invSum").textContent=nf+" 种食物 · "+(S.items.length-nf)+" 种补剂（吃完直接删掉即可）";
+}
+
+/* ---------- 配餐算法 ---------- */
+function roleOf(it){
+  if(it.base!=="g")return "supp";
+  var p=it.per||{};
+  if((p.carb||0)>=45)return "grain";
+  if((p.prot||0)>=12&&(p.fat||0)<22)return "protein";
+  if((p.ca||0)>=90&&(p.kcal||0)<250)return "dairy";
+  if((p.fat||0)>=35)return "fat";
+  if((p.kcal||0)<80&&(p.carb||0)<10)return "veg";
+  if((p.kcal||0)<130)return "fruit";
+  return "other";
+}
+function sumUsed(items,used){
+  var T=zero();
+  items.forEach(function(it){
+    var a=used[it.id]||0;if(!a)return;
+    var m=it.base==="g"?a/100:a;
+    FKEYS.forEach(function(k){T[k]+=(it.per[k]||0)*m});
+  });
+  return T;
+}
+function buildDay(items,d){
+  var used={},T=zero();
+  var take=function(it,amt){
+    if(!it||amt<=0)return 0;
+    var left=600-(used[it.id]||0);
+    amt=Math.min(amt,left);if(amt<=0)return 0;
+    used[it.id]=(used[it.id]||0)+amt;return amt;
+  };
+  var foods=items.filter(function(i){return i.base==="g"});
+  var supps=items.filter(function(i){return i.base!=="g"});
+  var by=function(r){return foods.filter(function(i){return roleOf(i)===r})};
+  var P=by("protein"),D=by("dairy"),V=by("veg"),FR=by("fruit"),G=by("grain"),FA=by("fat"),O=by("other");
+  var pick=function(arr,off){return arr.length?arr[(d+off)%arr.length]:null};
+  var log=[];
+  var add=function(it,amt,label){var a=take(it,amt);if(a>0)log.push([label,it,a]);return a};
+
+  for(var j=0;j<4;j++)
+    if((sumUsed(items,used).prot||0)<135) add(pick(P,j)||pick(O,j),150,"蛋白");
+  add(pick(D,0)||pick(O,5),300,"乳品");
+  for(var j2=0;j2<3;j2++) add(pick(V,j2)||pick(O,j2+1),160,"蔬菜");
+  for(var j3=0;j3<2;j3++) add(pick(FR,j3)||pick(O,j3+2),130,"水果");
+  for(var j4=0;j4<7;j4++){
+    T=sumUsed(items,used);if(T.kcal>=1900)break;
+    var g=pick(G,j4)||pick(O,j4);if(!g)break;
+    var room=1920-T.kcal;var perG=(g.per.kcal||0)/100;
+    if(perG<=0)break;
+    add(g,Math.min(120,room/perG),"主食");
+  }
+  T=sumUsed(items,used);
+  if((T.fat||0)<55) add(pick(FA,0),12,"油脂");
+  for(var s=0;s<supps.length;s++){
+    var sp=supps[s],u=0;
+    while(u<3){
+      var need=false;
+      for(var q=0;q<FKEYS.length;q++){
+        var k=FKEYS[q];
+        if((sp.per[k]||0)>0){
+          var cur=sumUsed(items,used)[k]||0;
+          var ul=S.ul[k];
+          if(cur<S.targets[k]*0.9&&(!ul||cur+sp.per[k]<=ul*1.05))need=true;
+        }
+      }
+      if(!need)break;
+      if(take(sp,1)<=0)break;
+      log.push(["补剂",sp,1]);u++;
+    }
+  }
+  for(var rep=0;rep<24;rep++){
+    T=sumUsed(items,used);
+    var wk=null,wr=1;
+    FKEYS.forEach(function(k){
+      if(CAPN[k])return;var tg=S.targets[k];if(!tg)return;
+      var rr=(T[k]||0)/tg;if(rr<wr){wr=rr;wk=k}
+    });
+    if(!wk||wr>=0.95)break;
+    var room=1990-(T.kcal||0);if(room<40)break;
+    var src2=null,bs=0;
+    items.forEach(function(it){
+      if(it.base!=="g")return;if((used[it.id]||0)>=500)return;
+      var pc=it.per[wk]||0;if(pc<=0)return;
+      var sc=pc/((it.per.kcal||0)+1);if(sc>bs){bs=sc;src2=it}
+    });
+    if(!src2)break;
+    var gr=Math.min(100,room/(((src2.per.kcal||0)||1)/100));
+    take(src2,Math.max(20,gr));
+  }
+  T=sumUsed(items,used);
+  var guard=0;
+  while(T.kcal>2000&&guard++<80){
+    var best=null,bg=0;
+    items.forEach(function(it){
+      if(it.base!=="g")return;if(roleOf(it)==="protein")return;
+      var a=used[it.id]||0;if(a>bg){bg=a;best=it}
+    });
+    if(!best)break;
+    var cut=Math.max(5,Math.min(bg,(T.kcal-2000)/((best.per.kcal||1)/100)));
+    used[best.id]-=cut;if(used[best.id]<=0)delete used[best.id];
+    T=sumUsed(items,used);
+  }
+  return {used:used,T:T,log:log};
+}
+function statusOf(k,v,t){
+  if(CAPN[k])return v<=t?"ok":(v<=t*1.15?"warn":"bad");
+  var r=t>0?v/t:1;return r>=1?"ok":(r>=0.7?"warn":"bad");
+}
+function gapOf(k,v,t){
+  if(CAPN[k])return v>t?v-t:0;
+  return Math.max(0,t-v);
+}
+function cheapest(k,gap){
+  var arr=FIX[k];if(!arr||gap<=0)return null;
+  var best=null;
+  arr.forEach(function(x){
+    if(!x[2])return;
+    var n=Math.ceil(gap/x[2]);
+    var cost=n*x[3];
+    if(!best||cost<best.cost)best={name:x[0],amt:x[1],provide:x[2],price:x[3],n:n,cost:cost};
+  });
+  return best;
+}
+
+/* ---------- 渲染分析 ---------- */
+function renderAna(){
+  var body=$("#anaBody");
+  if(!S.items.length){body.innerHTML='<div class="empty">请先在「① 库存」里录入你手头的东西。</div>';return}
+  var r=buildDay(S.items,0),T=r.T;
+  var rows="",bad=[];
+  F.forEach(function(f){
+    var k=f[0],v=T[k]||0,t=S.targets[k]||0;if(!t)return;
+    var st=statusOf(k,v,t),pct=Math.min(100,t>0?v/t*100:0);
+    var ulv=S.ul[k],over=(!CAPN[k]&&!!ulv&&v>ulv);
+    if(over)st="bad";
+    var cls=st==="ok"?"ok":st==="warn"?"warn":"bad";
+    if(st==="bad"&&!CAPN[k]&&!over)bad.push(f);
+    rows+='<tr><td>'+f[1]+' <span class="tag">'+f[2]+'</span>'+(over?' <b class="bad">超上限</b>':"")+'</td>'
+      +'<td class="num '+cls+'">'+fmt(v, k==="kcal"?0:1)+'</td>'
+      +'<td class="num" style="color:var(--dim)">'+(CAPN[k]?"≤":"")+fmt(t,0)+'</td>'
+      +'<td style="width:110px"><div class="bar"><i class="bg-'+st+'" style="width:'+pct+'%"></i></div></td>'
+      +'<td class="num '+cls+'">'+fmt(pct,0)+'%</td></tr>';
+  });
+  var meals="";
+  r.log.forEach(function(x){meals+='<div class="meal"><span class="lbl">'+x[0]+'</span> '+esc(x[1].name)+' · '+fmt(x[2],0)+x[1].unit+'</div>'});
+  var fix="";
+  if(bad.length){
+    fix='<table class="fix"><thead><tr><th>缺什么</th><th>缺口</th><th>最便宜补法</th><th class="num">需要</th><th class="num">约花费</th></tr></thead><tbody>';
+    bad.forEach(function(f){
+      var k=f[0],v=T[k]||0,t=S.targets[k]||0,g=gapOf(k,v,t),c=cheapest(k,g);
+      fix+='<tr><td>'+f[1]+'</td><td class="num bad">'+fmt(g, k==="kcal"?0:1)+' '+f[2]+'</td>'
+        +'<td class="cheap">'+(c?esc(c.name)+'（'+c.amt+'）':"需自行补充")+'</td>'
+        +'<td class="num">'+(c?c.n+" 份":"—")+'</td>'
+        +'<td class="num">'+(c?"¥"+fmt(c.cost,1):"—")+'</td></tr>';
+    });
+    fix+='</tbody></table>';
+  }else{
+    fix='<div class="ok">全部达标，无需补充。</div>';
+  }
+  body.innerHTML='<div class="card"><h2>今日配餐（库存内自动生成）</h2>'+meals
+    +'<div class="hint" style="margin-top:9px">合计 '+fmt(T.kcal,0)+' kcal · 蛋白 '+fmt(T.prot)+'g · 脂肪 '+fmt(T.fat)+'g · 碳水 '+fmt(T.carb)+'g · 纤维 '+fmt(T.fib)+'g</div></div>'
+    +'<div class="card"><h2>30 项元素覆盖</h2><table><thead><tr><th>营养素</th><th class="num">实际</th><th class="num">目标</th><th></th><th class="num">达成</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="card"><h2>缺口与最便宜补法</h2>'+fix+'</div>';
+}
+function renderPlan(){
+  var body=$("#planBody");
+  if(!S.items.length){body.innerHTML='<div class="empty">请先在「① 库存」里录入你手头的东西。</div>';return}
+  var days=[],agg=zero(),logs=[];
+  for(var d=0;d<3;d++){
+    var r=buildDay(S.items,d);days.push(r.T);logs.push(r.log);
+    FKEYS.forEach(function(k){agg[k]+=r.T[k]||0});
+  }
+  var avg=zero();FKEYS.forEach(function(k){avg[k]=agg[k]/3});
+  var cols="";
+  for(var d2=0;d2<3;d2++){
+    var m=logs[d2].map(function(x){return '<div class="meal"><span class="lbl">'+x[0]+'</span> '+esc(x[1].name)+' '+fmt(x[2],0)+x[1].unit+'</div>'}).join("");
+    cols+='<div class="day"><h3>第 '+(d2+1)+' 天 · '+fmt(days[d2].kcal,0)+' kcal · 蛋白 '+fmt(days[d2].prot)+'g</h3>'+m+'</div>';
+  }
+  var gaps="",cnt=0;
+  F.forEach(function(f){
+    var k=f[0],v=avg[k]||0,t=S.targets[k]||0;if(!t)return;
+    if(CAPN[k])return;
+    var g=gapOf(k,v,t);if(g<=0)return;cnt++;
+    var c=cheapest(k,g);
+    gaps+='<tr><td>'+f[1]+' <span class="tag">'+f[2]+'</span></td><td class="num bad">'+fmt(g,1)+'</td>'
+      +'<td class="cheap">'+(c?esc(c.name)+'（'+c.amt+'）':"—")+'</td><td class="num">'+(c?"¥"+fmt(c.cost*3,1)+"/3天":"—")+'</td></tr>';
+  });
+  var cover='<div class="hint" style="margin-top:8px">库存只记「有没有」，不记重量。某样东西吃完了，去「① 库存」删掉它，三天食谱会自动重排。</div>';
+  body.innerHTML='<div class="card"><h2>三天周期配餐（同一库存，轮换食材）</h2><div class="days">'+cols+'</div></div>'
+    +'<div class="card"><h2>三天平均缺口 → 采购清单</h2>'
+    +(cnt?'<table><thead><tr><th>缺口元素</th><th class="num">日均缺口</th><th>最便宜补法</th><th class="num">3天成本</th></tr></thead><tbody>'+gaps+'</tbody></table>':'<div class="ok">三天平均全部达标。</div>')
+    +cover+'</div>';
+}
+
+/* ---------- 精力评分（宅家、不训练版） ---------- */
+var SDEF={sleep:7.5,qual:3,light:30,caf:8,bf:30,sugar:0,brk:4,water:2.5,mood:3};
+var SW={sleep:22,qual:12,light:8,caf:14,bf:14,sugar:10,brk:8,water:4,mood:8};
+var FIXTXT={
+ sleep:"睡眠 <7h 时，任何食物都补不回来。先把就寝时间固定。",
+ qual:"睡够但质量差：睡前 3 小时别进食、别喝酒、房间降到 18-20℃。",
+ light:"起床 30 分钟内见 10 分钟自然光，是把生物钟往前拨最便宜的办法。",
+ caf:"最后一杯咖啡提前到睡前 8 小时。半衰期 5 小时，下午那杯会留到半夜。",
+ bf:"早餐蛋白补到 30g（3 个蛋 / 200g 酸奶）。这是全天血糖和食欲的第一道闸。",
+ sugar:"含糖饮料直接归零。这是精力波动最大的单一来源。",
+ brk:"久坐是宅家人群最大的漏点：每 60-90 分钟起身 2 分钟，血糖和注意力都会回升。",
+ water:"水喝到 2.5L，加一点盐。脱水 2% 就开始影响认知。",
+ mood:"动机低时先做 10 分钟最小动作，别等状态。"
+};
+function sGet(){S.score=S.score||Object.assign({},SDEF);return S.score}
+function sRatio(k,v){
+  if(k==="sleep")return (v>=7&&v<=9)?1:((v>=6&&v<7)||(v>9&&v<=10))?0.6:0.15;
+  if(k==="qual")return Math.max(0,Math.min(1,(v-1)/4));
+  if(k==="light")return v<=30?1:(v<=60?0.6:0.15);
+  if(k==="caf")return v>=8?1:(v>=6?0.6:(v>=4?0.3:0));
+  if(k==="bf")return v>=30?1:(v>=20?0.65:(v>0?0.3:0));
+  if(k==="sugar")return v?0:1;
+  if(k==="brk")return v>=6?1:(v>=3?0.6:(v>=1?0.3:0));
+  if(k==="water")return v>=2.5?1:(v>=1.5?0.6:0.2);
+  if(k==="mood")return Math.max(0,Math.min(1,(v-1)/4));
+  return 0;
+}
+function scoreNow(){var s=sGet(),sum=0;for(var k in SW)sum+=SW[k]*sRatio(k,+s[k]||0);return Math.round(sum)}
+function renderScore(){
+  var s=sGet(),now=scoreNow();
+  var lv=now>=80?"优秀":now>=65?"良好":now>=50?"及格":"偏低";
+  var cls=now>=65?"ok":now>=50?"warn":"bad";
+  var hints=[];
+  for(var k in SW){var r=sRatio(k,+s[k]||0);if(r<0.7)hints.push([SW[k]*(1-r),FIXTXT[k]])}
+  hints.sort(function(a,b){return b[0]-a[0]});
+  var hh=hints.slice(0,3).map(function(h){return "<li>"+h[1]+"</li>"}).join("")||"<li>今天没有明显短板，保持。</li>";
+  var rows=[["sleep","睡眠时长 (小时)",0.5],["qual","睡眠质量 (1-5)",1],["light","起床后多久见光 (分钟)",5],["caf","最后一杯咖啡距睡觉 (小时)",0.5],["bf","早餐蛋白 (g)",5],["brk","白天起身活动次数",1],["water","饮水 (L)",0.5],["mood","今天的「念头」(1-5)",1]];
+  var form="";
+  rows.forEach(function(r){form+='<div><label class="hint">'+r[1]+'</label><input type="number" step="'+r[2]+'" data-sk="'+r[0]+'" value="'+s[r[0]]+'"></div>'});
+  form+='<div><label class="hint">含糖饮料</label><select data-sk="sugar"><option value="0"'+((+s.sugar===0)?" selected":"")+'>没有</option><option value="1"'+(+s.sugar?" selected":"")+'>喝了</option></select></div>';
+  $("#scoreBody").innerHTML='<div class="card"><h2>精力评分（自评，不是医学指标）</h2>'
+    +'<div style="font-size:34px;font-weight:600" class="'+cls+'">'+now+' <span style="font-size:14px;color:var(--dim)">/100 · '+lv+'</span></div>'
+    +'<div class="grid" style="margin-top:12px">'+form+'</div>'
+    +'<div class="hint" style="margin-top:10px">权重：睡眠 22 + 睡眠质量 12 + 光照 8 + 咖啡因 14 + 早餐蛋白 14 + 无糖 10 + 久坐打断 8 + 饮水 4 + 动机 8。改任意一项立即重算。</div></div>'
+    +'<div class="card"><h2>今天最该改的三件事</h2><ul>'+hh+'</ul></div>'
+    +'<div class="card"><h2>为什么单独建模</h2><div class="hint">营养达标只说明「原料齐了」。真正决定「念头」的是血糖曲线、睡眠债、光照和久坐——这四项里没有一项能靠吃补回来，而且都不花钱。你现在按宅家（久坐）计，所以「起身打断」权重被特意留了位置。</div></div>';
+  $("#scoreBody").querySelectorAll("[data-sk]").forEach(function(el){
+    el.addEventListener("change",function(){sGet()[el.getAttribute("data-sk")]=+el.value||0;saveS();renderScore()});
+  });
+}
+
+/* ---------- 设置 ---------- */
+function renderSet(){
+  var t="",u="";
+  F.forEach(function(f){
+    if(S.targets[f[0]]!=null)t+='<div><label>'+f[1]+' <span class="tag">'+f[2]+'</span></label><input id="tg_'+f[0]+'" type="number" step="any" value="'+S.targets[f[0]]+'"></div>';
+    if(S.ul[f[0]]!=null)u+='<div><label>'+f[1]+' <span class="tag">'+f[2]+'</span></label><input id="ul_'+f[0]+'" type="number" step="any" value="'+S.ul[f[0]]+'"></div>';
+  });
+  $("#tgForm").innerHTML=t;$("#ulForm").innerHTML=u;
+  $("#cfgUsda").value=S.cfg.usda||"";$("#cfgAiUrl").value=S.cfg.aiUrl||"";$("#cfgAiKey").value=S.cfg.aiKey||"";$("#cfgAiModel").value=S.cfg.aiModel||"";
+}
+function saveT(){F.forEach(function(f){var el=$("#tg_"+f[0]);if(el)S.targets[f[0]]=+el.value||0});saveS();renderAll();alert("目标已保存")}
+function saveU(){F.forEach(function(f){var el=$("#ul_"+f[0]);if(el)S.ul[f[0]]=+el.value||0});saveS();renderAll();alert("上限已保存")}
+function saveC(){S.cfg.usda=$("#cfgUsda").value.trim();S.cfg.aiUrl=$("#cfgAiUrl").value.trim();S.cfg.aiKey=$("#cfgAiKey").value.trim();S.cfg.aiModel=$("#cfgAiModel").value.trim();saveS();alert("配置已保存")}
+
+/* ---------- 导入导出 ---------- */
+function exportData(){
+  var out=JSON.parse(JSON.stringify(S));out.exportedAt=new Date().toISOString();
+  var b=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(b);
+  a.download="energy-diet-"+(new Date().toISOString().slice(0,10))+".json";a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
+}
+function importData(file){
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var d=JSON.parse(fr.result);
+      if(!d.items)throw new Error("缺少 items 字段");
+      if(!confirm("导入将覆盖当前全部数据，继续？"))return;
+      S=d;saveS();loadS();saveS();renderAll();alert("已导入 "+S.items.length+" 条库存");
+    }catch(e){alert("导入失败："+e.message)}
+  };
+  fr.readAsText(file);
+}
+function closeModal(){$("#modal").classList.remove("on");$("#sheet").innerHTML=""}
+
+/* ---------- 总渲染 ---------- */
+function renderAll(){renderInv();renderAna();renderPlan();renderScore();renderSet();renderBanner()}
+function renderBanner(){
+  var b=$("#invBanner");
+  if(!S.items.length){
+    b.innerHTML='<div class="banner">第 1 步：先把你现在有的东西列出来（大米多少克、鸡胸肉多少、鸡蛋几个、补剂每片含什么）。<br>没有库存就无法分析，下面「分析」和「三天周期」两个页签会保持锁定状态。</div>';
+  }else{b.innerHTML=""}
+  var empty=!S.items.length;
+  document.querySelectorAll('nav button[data-tab="ana"],nav button[data-tab="plan"]').forEach(function(x){x.disabled=empty});
+}
+
+/* ---------- 事件 ---------- */
+document.querySelectorAll("nav button").forEach(function(b){
+  b.addEventListener("click",function(){
+    if(b.disabled)return;
+    document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("on")});
+    document.querySelectorAll("main section").forEach(function(x){x.classList.remove("on")});
+    b.classList.add("on");$("#tab-"+b.dataset.tab).classList.add("on");
+    window.scrollTo(0,0);
+  });
+});
+$("#btnSearch").addEventListener("click",doSearch);
+$("#q").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
+$("#btnBar").addEventListener("click",doBar);
+$("#btnManual").addEventListener("click",function(){openItem({unit:"g",qty:100})});
+$("#btnSupp").addEventListener("click",function(){openItem({unit:"片",qty:30})});
+$("#btnSaveT").addEventListener("click",saveT);
+$("#btnResetT").addEventListener("click",function(){if(confirm("恢复默认目标？")){S.targets=Object.assign({},DEF_T);saveS();renderAll()}});
+$("#btnSaveU").addEventListener("click",saveU);
+$("#btnSaveC").addEventListener("click",saveC);
+$("#btnClearCache").addEventListener("click",function(){S.cache={};saveS();alert("缓存已清空")});
+$("#btnExport").addEventListener("click",exportData);
+$("#btnExport2").addEventListener("click",exportData);
+$("#btnImport").addEventListener("click",function(){$("#fileIn").click()});
+$("#btnImport2").addEventListener("click",function(){$("#fileIn").click()});
+$("#fileIn").addEventListener("change",function(e){if(e.target.files[0])importData(e.target.files[0]);e.target.value=""});
+$("#btnWipe").addEventListener("click",function(){if(confirm("确定清空所有本地数据？")){localStorage.removeItem("energy-diet-v1");location.reload()}});
+$("#modal").addEventListener("click",function(e){if(e.target.id==="modal")closeModal()});
+
+loadS();renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules/
+_check.js
+*.log
+.DS_Store
+Thumbs.db
+
+# 个人饮食数据导出（含库存与口味，默认不入库）
+energy-diet-*.json
+*.local.json
